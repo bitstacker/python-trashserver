@@ -1,0 +1,6 @@
+#!c:\python\python.exe
+
+import cherrypy.daemon
+
+if __name__ == '__main__':
+    cherrypy.daemon.run()
