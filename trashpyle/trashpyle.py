@@ -1,17 +1,18 @@
 import cherrypy
 import os
-import urllib.request
 import urllib.parse
+import urllib.request
 
 class Trashpyle(object):
-    SERVERPATH="http://213.168.213.236/bremereb/bify/bify.jsp?"
+    SERVERPATH="http://213.168.213.236/bremereb/bify/bify.jsp"
 
     @cherrypy.expose
     def index(self):
         content = """
             <!DOCTYPE html>
-            <html>
+            <html lang="de">
             <head>
+                <meta charset="utf-8"/>
                 <title>Trashpyle</title>
                 <link rel="stylesheet" href="/static/css/bootstrap.min.css">
             </head>
@@ -53,15 +54,13 @@ class Trashpyle(object):
         return content
 
     def fetchBify(self,street,number):
-        values = {'strasse' : street,
-                    'hausnummer' : number }
-        headers = { 'User-Agent' : "Trashpyle", 
-                    'Content-Length' : ''}
-        data = urllib.parse.urlencode(values)
-        req = self.SERVERPATH + data
+        street = urllib.parse.quote(street,encoding="ISO-8859-1")
+        number = urllib.parse.quote(number,encoding="ISO-8859-1")
+        url = "http://213.168.213.236/bremereb/bify/bify.jsp?strasse={}&hausnummer={}".format(street,number)
+        req = urllib.request.Request(url)
         with urllib.request.urlopen(req) as response:
             content = response.read()
-        return content
+        return content.decode("ISO-8859-1")
 
 
 if __name__ == '__main__':
