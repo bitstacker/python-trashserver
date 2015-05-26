@@ -37,7 +37,7 @@ class Trashpyle(object):
                     <div class="panel-body">
                     <p>
                     Da die EKO (Entsorgung Kommunal) aus Bremen die Abfallkalender leider nur als PDF und als Java-Applet bereit stellt, habe ich diesen
-                    Kalender generator gebaut. Du kannst hier den Abfallkalender für deine Straße im iCalendar-Format (*.ics) generieren und herunterladen.
+                    Kalender-Generator gebaut. Du kannst hier den Abfallkalender für deine Straße im iCalendar-Format (*.ics) generieren und herunterladen.
                     Dieses Format wird von den meisten Kalendarprogrammen verstanden. Du kannst dir auch einen Alarm mit in die Datei schreiben lassen, damit
                     du ein paar Stunden vorher informiert wirst.
                     </p>
@@ -66,7 +66,8 @@ class Trashpyle(object):
                         <input type="number" name="alarm" class="form-control" id="alarmInput" placeholder="Minuten">
                         </div>
 
-                        <button type="submit" class="btn btn-default">Müllplan generieren</button>
+                        <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                         Müllplan generieren</button>
                     </form>
                     </div>
                     </div>
@@ -118,11 +119,16 @@ class Trashpyle(object):
                         </div>
                         <div class="panel panel-default">
                         <div class="panel-body">
+                        <p>
                         Du findest deinen Kalender unter folgendem Link:
                 """
             content += '<a href="generate?street='+street+'&number='+number+'&alarm='+alarm+'">'
             content += 'Kalender herunterladen</a>'
             content += """
+                        </p>
+                        <p>
+                        <a class="btn btn-default" href="/" role="button">Zum Formular zurück</a>
+                        </p>
                         </div>
                         </div>
                     </div>
