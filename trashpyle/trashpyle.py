@@ -7,6 +7,18 @@ from bs4 import BeautifulSoup
 from enum import Enum
 from datetime import datetime,timedelta,date
 from icalendar import Calendar, Event, vDate, Alarm
+import sys
+sys.stdout = sys.stderr
+
+import atexit
+import threading
+
+cherrypy.config.update({'environment': 'embedded'})
+
+if cherrypy.__version__.startswith('3.0') and cherrypy.engine.state == 0:
+    cherrypy.engine.start(blocking=False)
+    atexit.register(cherrypy.engine.stop)
+
 
 class TrashType(Enum):
     unbekannt = 0
@@ -230,15 +242,13 @@ class Trashpyle(object):
         return trashname
 
 
-if __name__ == '__main__':
-    conf = {
-         '/': {
-             'tools.staticdir.root': os.path.abspath(os.getcwd())
-         },
-         '/static': {
-             'tools.staticdir.on': True,
-             'tools.staticdir.dir': './public'
-         }
+conf = {
+     '/': {
+         'tools.staticdir.root': os.path.abspath(os.getcwd())
+     },
+     '/static': {
+         'tools.staticdir.on': True,
+         'tools.staticdir.dir': './public'
      }
-    cherrypy.quickstart(Trashpyle(), '/', conf)
-
+ }
+application = cherrypy.Application(Trashpyle(), '/', config=conf)
