@@ -10,9 +10,6 @@ from bs4 import BeautifulSoup
 from enum import Enum
 from datetime import datetime,timedelta,date
 from icalendar import Calendar, Event, vDate, Alarm
-from cherrypy.process.plugins import Daemonizer
-d = Daemonizer(cherrypy.engine)
-d.subscribe()
 
 class TrashType(Enum):
     unbekannt = 0
@@ -37,7 +34,7 @@ class Trashpyle(object):
             <div class="container">
                 <div class="row">
                     <div class="page-header">
-                        <h1>Müllkalender Generator <small>trashpyle - Version 0.1</small></h1>
+                        <h1>Müllkalender Generator <small>trashpyle - Version 0.5</small></h1>
                     </div>
                     <div class="panel panel-default">
                     <div class="panel-body">
@@ -86,62 +83,22 @@ class Trashpyle(object):
 
     @cherrypy.expose
     def linkpage(self,street='',number='',alarm=''):
-        if street == '' or number == '':
-            content = """
-            <!DOCTYPE html>
-            <html lang="de">
-            <head>
-                <meta charset="utf-8"/>
-                <title>Trashpyle</title>
-                <link rel="stylesheet" href="/static/css/bootstrap.min.css">
-            </head>
-            <body>
-            <div class="container">
-                <div class="row">
-                    <div class="page-header">
-                        <h1>Müllkalender Generator <small>trashpyle - Version 0.1</small></h1>
-                    </div>
-                    <div class="alert alert-danger" role="alert">Straße oder Hausnummer nicht angegeben.</div>
-                </div>
-            </div>
-            </body>
-            </html>
+        pattern = re.compile("Anfangsbuchstaben")
+        bify = self.fetchBifyForStreetAndNumber(street,number)
 
-            """
+        if street == '' or number == '':
+            content = self.getLinkpageTemplate(self.getErrorHtml('Straße oder Hausnummer nicht angegeben.'))
+        elif re.search(pattern, bify):
+            content = self.getLinkpageTemplate(
+                    self.getErrorHtml('Straße oder Hausnummer nicht gefunden.')+
+                    """
+                    <p>Bitte den Straßennamen und die Hausnummer genau so angeben wie bei der Webseite der ENO:
+                    <a href="http://www.entsorgung-kommunal.de/detail.php?gsid=bremen206.c.10946.de">http://www.entsorgung-kommunal.de/detail.php?gsid=bremen206.c.10946.de</a>
+                    </p>
+                    """
+                    )
         else:
-            content = """
-                <!DOCTYPE html>
-                <html lang="de">
-                <head>
-                    <meta charset="utf-8"/>
-                    <title>Trashpyle</title>
-                    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
-                </head>
-                <body>
-                <div class="container">
-                    <div class="row">
-                        <div class="page-header">
-                            <h1>Müllkalender Generator <small>trashpyle - Version 0.1</small></h1>
-                        </div>
-                        <div class="panel panel-default">
-                        <div class="panel-body">
-                        <p>
-                        Du findest deinen Kalender unter folgendem Link:
-                """
-            content += '<a href="generate?street='+street+'&number='+number+'&alarm='+alarm+'">'
-            content += 'Kalender herunterladen</a>'
-            content += """
-                        </p>
-                        <p>
-                        <a class="btn btn-default" href="/" role="button">Zum Formular zurück</a>
-                        </p>
-                        </div>
-                        </div>
-                    </div>
-                </div>
-                </body>
-                </html>
-                """
+            content = self.getLinkpageTemplate(self.getCalendarHtml(street,number,alarm))
         return content
 
     @cherrypy.expose
@@ -234,6 +191,54 @@ class Trashpyle(object):
         else:
             trashname = "Unbekannt"
         return trashname
+
+    def getErrorHtml(self, message):
+        content = '<div class="alert alert-danger" role="alert">{}</div>'.format(message)
+        return content
+
+    def getCalendarHtml(self,street,number,alarm):
+        content = """
+                    <p>
+                        Du findest deinen Kalender unter folgendem Link:
+        """
+        content += '<a href="generate?street='+street+'&number='+number+'&alarm='+alarm+'">'
+        content += 'Kalender herunterladen</a>'
+        content += """
+                    </p>
+        """
+        return content
+
+    def getLinkpageTemplate(self, content):
+            html = """
+            <!DOCTYPE html>
+            <html lang="de">
+            <head>
+                <meta charset="utf-8"/>
+                <title>Trashpyle</title>
+                <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+            </head>
+            <body>
+            <div class="container">
+                <div class="row">
+                    <div class="page-header">
+                        <h1>Müllkalender Generator <small>trashpyle - Version 0.5</small></h1>
+                    </div>
+                    <div class="panel panel-default">
+                    <div class="panel-body">
+            """
+            html += content
+            html += """
+                        <p>
+                        <a class="btn btn-default" href="/" role="button">Zum Formular zurück</a>
+                        </p>
+                    </div>
+                    </div>
+                </div>
+            </div>
+            </body>
+            </html>
+            """
+            return html
 
 
 conf = {
