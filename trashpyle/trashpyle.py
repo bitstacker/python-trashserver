@@ -63,6 +63,11 @@ class Trashpyle(object):
                         <label for="numberInput">Hausnummer</label>
                         <input type="number" name="number" class="form-control" id="numberInput" placeholder="Hausnummer">
                         </div>
+
+                        <div class="form-group">
+                        <label for="additionInput">Zusatz</label>
+                        <input type="text" name="addition" class="form-control" id="additionInput" placeholder="Zusatz">
+                        </div>
                         
                         <div class="form-group">
                         <label for="alarmInput">Wie viele Minuten vorher soll benachrichtigt werden? (Feld leer lassen für keine Benachrichtigung)</label>
@@ -82,9 +87,9 @@ class Trashpyle(object):
         return content
 
     @cherrypy.expose
-    def linkpage(self,street='',number='',alarm=''):
+    def linkpage(self,street='',number='',addition='',alarm=''):
         pattern = re.compile("Anfangsbuchstaben")
-        bify = self.fetchBifyForStreetAndNumber(street,number)
+        bify = self.fetchBifyForStreetAndNumber(street,number,addition)
 
         if street == '' or number == '':
             content = self.getLinkpageTemplate(self.getErrorHtml('Straße oder Hausnummer nicht angegeben.'))
@@ -109,10 +114,14 @@ class Trashpyle(object):
         content = self.getiCalFromEventlist(eventlist,alarm)
         return content
 
-    def fetchBifyForStreetAndNumber(self,street,number):
+    def fetchBifyForStreetAndNumber(self,street,number,addition=''):
         street = urllib.parse.quote(street,encoding="ISO-8859-1")
         number = urllib.parse.quote(number,encoding="ISO-8859-1")
-        url = "http://213.168.213.236/bremereb/bify/bify.jsp?strasse={}&hausnummer={}".format(street,number)
+        if addition != '':
+            addition = urllib.parse.quote(addition,encoding="ISO-8859-1")
+            url = "http://213.168.213.236/bremereb/bify/bify.jsp?strasse={}&hausnummer={}&zusatz={}".format(street,number,addition)
+        else:
+            url = "http://213.168.213.236/bremereb/bify/bify.jsp?strasse={}&hausnummer={}".format(street,number)
         req = urllib.request.Request(url)
         with urllib.request.urlopen(req) as response:
             content = response.read()
