@@ -250,6 +250,7 @@ conf = {
          'tools.staticdir.dir': './public'
      }
  }
-cherrypy.server.socket_host = '0.0.0.0'
+cherrypy.server.socket_host = '127.0.0.1'
+cherrypy.server.socket_port = 8080
 cherrypy.quickstart(Trashpyle(), '/', conf)
 
