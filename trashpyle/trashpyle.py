@@ -95,7 +95,7 @@ class Trashpyle(object):
             content = self.getLinkpageTemplate(self.getErrorHtml('Straße oder Hausnummer nicht angegeben.'))
         elif re.search(pattern, bify):
             content = self.getLinkpageTemplate(
-                    self.getErrorHtml('Straße oder Hausnummer nicht gefunden.')+
+                    self.getErrorHtml('Konnte keine passenden Daten finden. Sorry :(')+
                     """
                     <p>Bitte den Straßennamen und die Hausnummer genau so angeben wie bei der Webseite der ENO:
                     <a href="http://www.entsorgung-kommunal.de/detail.php?gsid=bremen206.c.10946.de">http://www.entsorgung-kommunal.de/detail.php?gsid=bremen206.c.10946.de</a>
@@ -103,13 +103,13 @@ class Trashpyle(object):
                     """
                     )
         else:
-            content = self.getLinkpageTemplate(self.getCalendarHtml(street,number,alarm))
+            content = self.getLinkpageTemplate(self.getCalendarHtml(street,number,addition,alarm))
         return content
 
     @cherrypy.expose
-    def generate(self,street='',number='',alarm=''):
+    def generate(self,street='',number='',addition='',alarm=''):
         cherrypy.response.headers["Content-Disposition"] = 'attachment; filename="muell.ics"'
-        bify = self.fetchBifyForStreetAndNumber(street,number)
+        bify = self.fetchBifyForStreetAndNumber(street,number,addition)
         eventlist = self.findTrashEventsInContent(bify)
         content = self.getiCalFromEventlist(eventlist,alarm)
         return content
@@ -205,12 +205,15 @@ class Trashpyle(object):
         content = '<div class="alert alert-danger" role="alert">{}</div>'.format(message)
         return content
 
-    def getCalendarHtml(self,street,number,alarm):
+    def getCalendarHtml(self,street='',number='',addition='',alarm=''):
         content = """
                     <p>
                         Du findest deinen Kalender unter folgendem Link:
         """
-        content += '<a href="generate?street='+street+'&number='+number+'&alarm='+alarm+'">'
+        if addition == '':
+            content += '<a href="generate?street='+street+'&number='+number+'&alarm='+alarm+'">'
+        else:
+            content += '<a href="generate?street='+street+'&number='+number+'&addition='+addition+'&alarm='+alarm+'">'
         content += 'Kalender herunterladen</a>'
         content += """
                     </p>
