@@ -9,7 +9,7 @@ import urllib.request
 from bs4 import BeautifulSoup
 from enum import Enum
 from datetime import datetime,timedelta,date
-from icalendar import Calendar, Event, vDate, Alarm
+from icalendar import Calendar, Event, vDate, Alarm, vDatetime, LocalTimezone
 
 class TrashType(Enum):
     unbekannt = 0
@@ -172,19 +172,26 @@ class Trashpyle(object):
         return trashtype
 
     def getiCalFromEventlist(self, eventlist, alarm):
+        now = datetime.now()
         cal = Calendar()
         cal.add('prodid', 'trashpyle')
-        cal.add('version', '0.1')
+        cal.add('version', '0.6')
         for event in eventlist:
             icalevent = Event()
-            icalevent.add('dtstart', event[0])
-            icalevent.add('dtend', event[0] + timedelta(days=1))
+            icalevent.add('created', now)
+            icalevent.add('last-modified', now)
+            icalevent.add('dtstamp', now)
+            icalevent.add('uid', event[0].strftime('%d.%m.%Y')+"thisisauid")
             icalevent.add('summary', self.getNameStringFromTrashType(event[1]))
+            icalevent.add('dtstart', event[0])
+            icalevent.add('dtend', event[0] + timedelta(hours=1))
+            icalevent.add('transp','TRANSPARENT')
             if alarm != '':
                 alarmtime = timedelta(minutes=-int(alarm))
                 icalalarm = Alarm()
                 icalalarm.add('action','DISPLAY')
-                icalalarm.add('trigger',alarmtime)
+                icalalarm.add('TRIGGER;VALUE=DURATION',alarmtime)
+                icalalarm.add('description','Müll an die Straße stellen')
                 icalevent.add_component(icalalarm)
             cal.add_component(icalevent)
         return cal.to_ical()
